@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<div th:if="${msg}" class="erred">
+    <span th:text="${msg}"></span>
+</div>
+
+<head>
+    <meta charset="UTF-8"/>
+    <title>New reservation</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+    <style>
+        .erred {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-4">
+    <h1>New reservation</h1>
+
+    <form th:action="@{/reservations}" th:object="${reservationCommand}" method="post">
+        <div th:if="${#fields.hasGlobalErrors()}">
+            <ul class="erred">
+                <li th:each="err : ${#fields.globalErrors()}" th:text="${err}"></li>
+            </ul>
+        </div>
+
+        <div class="form-group">
+            <label for="employeeId">Employee</label>
+            <select id="employeeId" class="form-control" th:field="*{employeeId}">
+                <option value="" disabled selected>-- Choose employee --</option>
+                <option th:each="emp : ${employees}" th:value="${emp.id}"
+                        th:text="${emp.firstName + ' ' + emp.lastName}"></option>
+            </select>
+            <div th:if="${#fields.hasErrors('employeeId')}" th:errors="*{employeeId}" class="erred"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="meetingRoomId">Meeting room</label>
+            <select id="meetingRoomId" class="form-control" th:field="*{meetingRoomId}">
+                <option value="" disabled selected>-- Choose Meeting Room --</option>
+                <option th:each="room : ${meetingRooms}" th:value="${room.id}" th:text="${room.name}"></option>
+            </select>
+            <div th:if="${#fields.hasErrors('meetingRoomId')}" th:errors="*{meetingRoomId}" class="erred"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="subject">Subject</label>
+            <input type="text" id="subject" class="form-control" th:field="*{subject}"
+                   placeholder="Add meeting subject"/>
+            <div th:if="${#fields.hasErrors('subject')}" th:errors="*{subject}" class="erred"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="startDateTime">Start date and time</label>
+            <input type="datetime-local" id="startDateTime" class="form-control" th:field="*{startDateTime}"/>
+            <div th:if="${#fields.hasErrors('startDateTime')}" th:errors="*{startDateTime}" class="erred"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="durationMin">Duration (minutes)</label>
+            <input type="number" id="durationMin" class="form-control" th:field="*{durationMin}" min="15"
+                   placeholder="Min. 15 minut"/>
+            <div th:if="${#fields.hasErrors('durationMin')}" th:errors="*{durationMin}" class="erred"></div>
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-3">Add reservation</button>
+    </form>
+
+    <hr class="my-5"/>
+
+    <h2>List of reservations</h2>
+
+    <form th:action="@{/reservations}" method="get" class="mb-4">
+        <div class="form-row row">
+            <div class="form-group col-md-3">
+                <input type="text" name="subject" class="form-control" placeholder="Subject" th:value="${subject}"/>
+            </div>
+            <div class="form-group col-md-2">
+                <select name="employeeId" class="form-control">
+                    <option value="">-- Employee --</option>
+                    <option th:each="emp : ${employees}" th:value="${emp.id}"
+                            th:selected="${emp.id == selectedEmployeeId}"
+                            th:text="${emp.firstName + ' ' + emp.lastName}"></option>
+                </select>
+            </div>
+            <div class="form-group col-md-2">
+                <select name="meetingRoomId" class="form-control">
+                    <option value="">-- Meeting room --</option>
+                    <option th:each="room : ${meetingRooms}" th:value="${room.id}"
+                            th:selected="${room.id == selectedRoomId}" th:text="${room.name}"></option>
+                </select>
+            </div>
+            <div class="form-group col-md-2">
+                <input type="date" name="dateFrom" class="form-control" th:value="${dateFrom}"/>
+            </div>
+            <div class="form-group col-md-2">
+                <input type="date" name="dateTo" class="form-control" th:value="${dateTo}"/>
+            </div>
+            <div class="form-group col-md-1">
+                <button type="submit" class="btn btn-outline-primary w-100">Filter</button>
+            </div>
+            <div class="form-group col-md-1">
+                <button type="button" class="btn btn-outline-secondary w-100" th:onclick="|window.location.href='@{/reservations}'|">Reset filters</button>
+            </div>
+        </div>
+    </form>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+        <tr>
+            <th>
+                <a th:href="@{/reservations(sort=${sort == 'employee.lastName,asc' ? 'employee.lastName,desc' : 'employee.lastName,asc'},subject=${subject},
+                employeeId=${selectedEmployeeId},meetingRoomId=${selectedRoomId},dateFrom=${dateFrom},dateTo=${dateTo})}">Employee</a>
+            </th>
+            <th>
+                <a th:href="@{/reservations(sort=${sort == 'meetingRoom.name,asc' ? 'meetingRoom.name,desc' : 'meetingRoom.name,asc'},subject=${subject},
+                employeeId=${selectedEmployeeId},meetingRoomId=${selectedRoomId},dateFrom=${dateFrom},dateTo=${dateTo})}">Meeting room</a>
+            </th>
+            <th>
+                <a th:href="@{/reservations(sort=${sort == 'startDateTime,asc' ? 'startDateTime,desc' : 'startDateTime,asc'},subject=${subject},
+                employeeId=${selectedEmployeeId},meetingRoomId=${selectedRoomId},dateFrom=${dateFrom},dateTo=${dateTo})}">Data</a>
+            </th>
+            <th>Subject</th>
+            <th>
+                <a th:href="@{/reservations(sort=${sort == 'durationMin,asc' ? 'durationMin,desc' : 'durationMin,asc'},subject=${subject},
+                employeeId=${selectedEmployeeId}, meetingRoomId=${selectedRoomId}, dateFrom=${dateFrom}, dateTo=${dateTo})}">Duration</a>
+            </th>
+
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="res : ${reservations}">
+            <td th:text="${res.employeeFullName}"></td>
+            <td th:text="${res.meetingRoom}"></td>
+            <td th:text="${#temporals.format(res.startDateTime, 'yyyy-MM-dd HH:mm')}"></td>
+            <td th:text="${res.subject}"></td>
+            <td th:text="${res.durationMin + ' min'}"></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
